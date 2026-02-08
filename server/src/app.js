@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
+import todoRoutes from "./routes/todo.routes.js";
 import connectDB from "./config/database.js";
 import dotenv from "dotenv";
 
@@ -24,6 +25,7 @@ connectDB();
 
 // Routes
 app.use("/api", authRoutes);
+app.use("/api/todos", todoRoutes);
 
 // Home
 app.get("/", (req, res) => {

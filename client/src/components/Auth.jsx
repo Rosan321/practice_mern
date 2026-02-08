@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 
 export default function Auth() {
@@ -11,7 +12,6 @@ export default function Auth() {
     e.preventDefault();
     setMessage("");
 
-    // basic validation
     if (!username || !password) {
       setMessage("All fields are required!");
       return;
@@ -21,30 +21,36 @@ export default function Auth() {
 
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
-      const response = await fetch(`http://localhost:3000/api${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+
+      const res = await axios.post(`http://localhost:3000/api${endpoint}`, {
+        username,
+        password,
       });
 
-      const data = await response.json();
+      // ✅ success
+      setMessage(res.data.message);
 
-      alert(data.message);
-
-      if (!response.ok) {
-        setMessage(data.message || "Something went wrong");
+      if (isLogin) {
+        sessionStorage.setItem(
+          "auth",
+          JSON.stringify({
+            loggedIn: true,
+            username,
+          }),
+        );
       } else {
-        setMessage(data.message);
-        if (!isLogin) {
-          // after signup, switch to login
-          setIsLogin(true);
-          setUsername("");
-          setPassword("");
-        }
+        // after signup → switch to login
+        setIsLogin(true);
+        setUsername("");
+        setPassword("");
       }
-    } catch (err) {
-      console.error(err);
-      setMessage("Server error. Try again later.");
+    } catch (error) {
+      // ❌ axios error handling
+      if (error.response) {
+        setMessage(error.response.data.message || "Something went wrong");
+      } else {
+        setMessage("Server error. Try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,11 +59,11 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-12">
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-md">
-          <img
-            alt="Your Company"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-            className="mx-auto h-10 w-auto"
-          />
+        <img
+          alt="Your Company"
+          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+          className="mx-auto h-10 w-auto"
+        />
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">
             {isLogin ? "Sign in to your account" : "Create a new account"}
@@ -139,8 +145,8 @@ export default function Auth() {
                   ? "Signing in..."
                   : "Signing up..."
                 : isLogin
-                ? "Sign in"
-                : "Sign up"}
+                  ? "Sign in"
+                  : "Sign up"}
             </button>
           </div>
         </form>
