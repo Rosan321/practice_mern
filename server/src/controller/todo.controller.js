@@ -1,4 +1,14 @@
-import { createTodo, deleteTodo, updateTodo } from "../services/todo.services";
+import { createTodo, deleteTodo, getTodo, updateTodo } from "../services/todo.services.js";
+
+export const getTodosController = async (req, res) => {
+  try {
+    const todos = await getTodo();
+    res.status(200).json({message: "Todos retrieved successfully", todos});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export const createTodoController = async (req, res) => {
   try {
@@ -24,7 +34,7 @@ export const updateTodoController = async (req, res) => {
       return res.status(404).json({ message: "Todo not found" });
     }
 
-    res.json({ message: "Todo updated", todo });
+    res.json({ message: "Todo data updated", todo });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

@@ -1,10 +1,10 @@
-import Todo from "../models/todo.model"
+import Todo from "../models/todo.model.js"
 
 export const createTodo = async (title) => {
     return await Todo.create({ title });
 };
 
-export const getAllTodo = async () => {
+export const getTodo = async () => {
     return await Todo.find();
 };
 

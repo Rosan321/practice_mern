@@ -2,10 +2,10 @@ import axios from "axios";
 import { useState } from "react";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true); // toggle login/signup
+  const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(""); // success/error message
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -31,21 +31,14 @@ export default function Auth() {
       setMessage(res.data.message);
 
       if (isLogin) {
-        sessionStorage.setItem(
-          "auth",
-          JSON.stringify({
-            loggedIn: true,
-            username,
-          }),
-        );
+        sessionStorage.setItem("token", res.data.token);
       } else {
-        // after signup → switch to login
         setIsLogin(true);
         setUsername("");
         setPassword("");
       }
+      if (isLogin) window.location.reload();
     } catch (error) {
-      // ❌ axios error handling
       if (error.response) {
         setMessage(error.response.data.message || "Something went wrong");
       } else {

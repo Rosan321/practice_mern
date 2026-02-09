@@ -5,11 +5,10 @@ const todoSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    completed: {
+    status: {
         type: Boolean,
         default: false,
     },
-    timestamp: true
 });
 
 export default mongoose.model("Todo", todoSchema);
