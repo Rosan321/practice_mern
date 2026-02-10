@@ -1,40 +1,37 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 import authRoutes from "./routes/auth.routes.js";
 import todoRoutes from "./routes/todo.routes.js";
 import connectDB from "./config/database.js";
-import dotenv from "dotenv";
 
 const app = express();
 
-// Enable CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173",  // or you can use true to allow all origins
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
 
 app.use(cookieParser());
-
-
-// Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-dotenv.config();
 connectDB();
 
-// Routes
-app.use("/api", authRoutes);
-app.use("/api/todos", todoRoutes);
+// Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Home
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome, API is running" });
-});
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/todos", todoRoutes);
 
 export default app;

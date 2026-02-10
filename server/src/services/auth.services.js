@@ -4,10 +4,9 @@ export const findUserByUsername = async (username) => {
   return await Auth.findOne({ username });
 };
 
-export const createUser = async ({username, password}) => {
-
+export const createUser = async ({ username, password }) => {
   return await Auth.create({
     username,
-    password
+    password,
   });
 };

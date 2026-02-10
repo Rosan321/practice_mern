@@ -1,40 +1,47 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-  withCredentials: true, // REQUIRED for cookies
+const axiosInstance = axios.create({
+  baseURL: "http://localhost:5000/api",
+  withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("accessToken");
+axiosInstance.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-api.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config;
+
+    // ❌ DO NOT refresh if refresh itself failed
+    if (originalRequest.url.includes("/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       try {
-        const refreshRes = await api.post("/auth/refresh");
-        sessionStorage.setItem(
-          "accessToken",
-          refreshRes.data.accessToken
-        );
+        const refreshRes = await axiosInstance.post("/auth/refresh");
+        sessionStorage.setItem("token", refreshRes.data.accessToken);
 
-        error.config.headers.Authorization =
-          `Bearer ${refreshRes.data.accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;
 
-        return api(error.config);
+        return axiosInstance(originalRequest);
       } catch {
         sessionStorage.clear();
+        alert("Session expired. Please log in again.");
         window.location.href = "/login";
       }
     }
+
     return Promise.reject(error);
-  }
+  },
 );
 
-export default api;
+export default axiosInstance;

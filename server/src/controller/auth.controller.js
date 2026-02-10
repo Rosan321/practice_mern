@@ -1,7 +1,11 @@
 // here write the logic for the request and response of the api endpoints
 
+import jwt from "jsonwebtoken";
 import { createUser, findUserByUsername } from "../services/auth.services.js";
-import generateToken from "../utils/generateToken.utils.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/generateToken.utils.js";
 import { comparePassword, hashPassword } from "../utils/hash.utils.js";
 
 export const register = async (req, res) => {
@@ -64,19 +68,20 @@ export const login = async (req, res) => {
       });
     }
 
-    const payload = generateToken({
+    const payload = {
       userId: user._id,
       username: user.username,
-    });
+    };
 
-    const accessToken = generateToken(payload);
-    const refreshToken = genrateRefreshToken(payload);
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      // maxAge: 1 * 60 * 1000, // 7 days
     });
 
     res.status(200).json({
@@ -86,6 +91,7 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("LOGIN ERROR:", error);
     res.status(500).json({
+      status: 500,
       message: "Internal server error",
     });
   }
@@ -94,25 +100,25 @@ export const login = async (req, res) => {
 export const refreshAccessToken = (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if(!refreshToken) {
-    return res.status(401).json({ message: "No refresh token provided" });
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json({ statusCode: 401, message: "No refresh token" });
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_TOKEN_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN);
 
-    const accessToken = generateToken({
+    const accessToken = generateAccessToken({
       userId: decoded.userId,
       username: decoded.username,
     });
 
-    res.status(200).json({
-      accessToken,
-    });
+    return res.status(200).json({ accessToken });
   } catch (error) {
-    console.error("REFRESH ACCESS TOKEN ERROR:", error);
-    res.status(401).json({
-      message: "Invalid refresh token",
-    });
+    console.error("❌ JWT VERIFY ERROR:", error.message);
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: "Invalid refresh token" });
   }
-}
+};

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const API_URL = "http://localhost:3000/api/todos";
+import axiosInstance from "../utils/axiosInstance";
 
 const Home = () => {
   const [todos, setTodos] = useState([]);
@@ -9,16 +7,10 @@ const Home = () => {
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
 
-  const token = sessionStorage.getItem("token");
-
   // 🔹 Fetch Todos (READ)
   const fetchTodos = async () => {
     try {
-      const res = await axios.get(`${API_URL}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await axiosInstance.get("todos");
       setTodos(res.data.todos);
     } catch (err) {
       console.error("Error fetching todos", err);
@@ -34,11 +26,7 @@ const Home = () => {
     if (!title.trim()) return;
 
     try {
-      const res = await axios.post(`${API_URL}/create`, { title }, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+      const res = await axiosInstance.post(`todos/create`, { title });
       alert(res.data.message);
       setTodos([...todos, res.data.newTodo]);
       setTitle("");
@@ -52,11 +40,7 @@ const Home = () => {
     const isConfirmed = confirm("Are you sure you want to delete this todo?");
     if (!isConfirmed) return; // stop if user cancels
     try {
-      const res = await axios.delete(`${API_URL}/delete/${id}`, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+      const res = await axiosInstance.delete(`todos/delete/${id}`);
       alert(res.data.message);
       setTodos(todos.filter((todo) => todo._id !== id));
     } catch (err) {
@@ -72,13 +56,9 @@ const Home = () => {
     if (!isConfirmed) return; // stop if user cancels
 
     try {
-      const res = await axios.put(`${API_URL}/update/${id}`, {
+      const res = await axiosInstance.put(`todos/update/${id}`, {
         title: editingTitle,
-      }, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+      });
 
       alert(res.data.message);
 
@@ -94,8 +74,8 @@ const Home = () => {
   return (
     <>
       <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          Welcome to my Home
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          Make your Todo List
         </h2>
 
         {/* Add Todo */}

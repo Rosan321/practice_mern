@@ -4,8 +4,10 @@ const protect = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    if ( !authHeader || !authHeader.startsWith("Bearer") ) {
-      return res.status(401).json({ message: "Unauthorized access" });
+    if (!authHeader || !authHeader.startsWith("Bearer")) {
+      return res
+        .status(401)
+        .json({ statusCode: 401, message: "Unauthorized access" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -15,7 +17,7 @@ const protect = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token expired" });
+    return res.status(401).json({ statusCode: 401, message: "Token expired" });
   }
 };
 

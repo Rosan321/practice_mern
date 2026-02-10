@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useState } from "react";
+import axiosInstance from "../utils/axiosInstance";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,7 +22,7 @@ export default function Auth() {
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
 
-      const res = await axios.post(`http://localhost:3000/api${endpoint}`, {
+      const res = await axiosInstance.post(endpoint, {
         username,
         password,
       });
@@ -31,7 +31,7 @@ export default function Auth() {
       setMessage(res.data.message);
 
       if (isLogin) {
-        sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("token", res.data.accessToken);
       } else {
         setIsLogin(true);
         setUsername("");
