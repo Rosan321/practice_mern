@@ -9,7 +9,7 @@ import protect from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(protect);
+// router.use(protect);
 
 /**
  * @swagger
@@ -30,7 +30,7 @@ router.use(protect);
  *       200:
  *         description: List of todos
  */
-router.get("/", getTodosController);
+router.get("/", protect, getTodosController);
 
 /**
  * @swagger
@@ -56,7 +56,7 @@ router.get("/", getTodosController);
  *       201:
  *         description: Todo created
  */
-router.post("/create", createTodoController);
+router.post("/create", protect, createTodoController);
 
 /**
  * @swagger
@@ -89,7 +89,7 @@ router.post("/create", createTodoController);
  *       200:
  *         description: Todo updated
  */
-router.put("/update/:id", updateTodoController); // this is common pattern
+router.put("/update/:id", protect, updateTodoController); // this is common pattern
 // router.put("/:id", updateTodoController);        // This is more descriptive and clear and simple (Recomended)
 // router.delete("/:id", deleteTodoController);
 
@@ -111,6 +111,6 @@ router.put("/update/:id", updateTodoController); // this is common pattern
  *       200:
  *         description: Todo deleted
  */
-router.delete("/delete/:id", deleteTodoController);
+router.delete("/delete/:id", protect, deleteTodoController);
 
 export default router;

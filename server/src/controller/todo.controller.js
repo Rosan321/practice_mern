@@ -7,21 +7,19 @@ import {
 
 export const getTodosController = async (req, res) => {
   try {
-    const todos = await getTodo();
+    const todos = await getTodo(req.user._id);
     if (!todos) {
       return res
         .status(404)
         .json({ statusCode: 404, message: "No Data Found", todos });
     }
 
-    res
-      .status(200)
-      .json({
-        statusCode: 200,
-        status: "success",
-        message: "Todos retrieved successfully",
-        todos,
-      });
+    res.status(200).json({
+      statusCode: 200,
+      status: "success",
+      message: "Todos retrieved successfully",
+      todos,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ statusCode: 500, message: "Internal server error" });
@@ -38,8 +36,10 @@ export const createTodoController = async (req, res) => {
         .json({ statusCode: 400, message: "Title is required" });
     }
 
-    // FIX: pass object, not string
-    const newTodo = await createTodo({ title });
+    const newTodo = await createTodo({
+      title,
+      userId: req.user._id, // 🔥 VERY IMPORTANT
+    });
 
     res.status(201).json({
       statusCode: 201,
@@ -56,14 +56,11 @@ export const createTodoController = async (req, res) => {
   }
 };
 
-
 export const updateTodoController = async (req, res) => {
   try {
-    console.log("UPDATE BODY:", req.body);
-    console.log("UPDATE ID:", req.params.id);
     const { id } = req.params;
 
-    const todo = await updateTodo(id, req.body);
+    const todo = await updateTodo(id, req.body, req.user._id);
     if (!todo) {
       return res
         .status(404)
@@ -81,7 +78,7 @@ export const deleteTodoController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const todo = await deleteTodo(id);
+    const todo = await deleteTodo(id, req.user._id);
     if (!todo) {
       return res
         .status(404)
@@ -94,3 +91,4 @@ export const deleteTodoController = async (req, res) => {
     res.status(500).json({ statusCode: 500, message: "Internal server error" });
   }
 };
+

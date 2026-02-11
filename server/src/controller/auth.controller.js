@@ -1,7 +1,7 @@
 // here write the logic for the request and response of the api endpoints
 
 import jwt from "jsonwebtoken";
-import { createUser, findUserByUsername } from "../services/auth.services.js";
+import { createUser, findUserByEmail } from "../services/auth.services.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -10,18 +10,18 @@ import { comparePassword, hashPassword } from "../utils/hash.utils.js";
 
 export const register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, username, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !username || !password) {
       return res.status(400).json({
         message: "All fields are required",
       });
     }
 
-    const existingUser = await findUserByUsername(username);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({
-        message: "User already exists",
+        message: "Email already registered",
       });
     }
 
@@ -29,6 +29,7 @@ export const register = async (req, res) => {
 
     await createUser({
       username,
+      email,
       password: hashedPassword,
     });
 
@@ -45,18 +46,18 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Username and password are required",
+        message: "Email and password are required",
       });
     }
 
-    const user = await findUserByUsername(username);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "You are not registered!",
       });
     }
 
@@ -64,12 +65,13 @@ export const login = async (req, res) => {
     const isValid = await comparePassword(password, user.password);
     if (!isValid) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "Invalid email or password",
       });
     }
 
     const payload = {
       userId: user._id,
+      email: user.email,
       username: user.username,
     };
 
@@ -81,12 +83,17 @@ export const login = async (req, res) => {
       secure: false,
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      // maxAge: 1 * 60 * 1000, // 7 days
+      // maxAge: 1 * 60 * 1000, // 1 Minute
     });
 
     res.status(200).json({
       message: "Login successful",
       accessToken,
+      user: {
+        userId: user._id,
+        email: user.email,
+        username: user.username,
+      },
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);

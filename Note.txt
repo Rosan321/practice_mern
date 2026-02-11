@@ -1,0 +1,14 @@
+Backend 
+========
+
+1. 1st make folder for backend then write npm init -y create package.json.
+2. Install => npm install nodemon --save-dev express
+3. Create a file server.js where import the express as app, then use that to read data 
+	eg: app.use(express.json());
+4. Then Create routes, cors, req, res, middleware, params, querry and statusCode
+5. Install mongoose and connect to mongoDB
+6. Learn schema, model, crud operation, validation and unique fields
+
+7.	Create some projects like Todo, Blog and Auth system
+
+
